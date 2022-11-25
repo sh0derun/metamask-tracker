@@ -1,0 +1,17 @@
+
+
+.nav-title{
+    margin-right: auto;
+    color: #fff;
+}
+
+nav{
+    display:flex;
+    background-color: #0d1a26;
+}
+
+nav > img{
+    padding:10px;
+    margin:10px;
+    height: 40px;
+}
