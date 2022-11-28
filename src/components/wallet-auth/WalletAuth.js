@@ -2,6 +2,7 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import React, { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import styled from "styled-components";
+import StoreKeys from "../../constants/app-store.js";
 import ChainMap from "../../constants/chain-map.js";
 import Status from "../../constants/status.js";
 import "./WalletAuth.css"
@@ -54,9 +55,9 @@ Button.defaultProps = {
 
 export default function WalletAuth(){
 
-    const [status, setStatus] = useState(localStorage.getItem("walletAuthStatus") ? localStorage.getItem("walletAuthStatus") : Status.IDLE);
-    const [accountAddress, setAccountAddress] = useState(localStorage.getItem("accountAddress") ? localStorage.getItem("accountAddress") : "");
-    const [network, setNetwork] = useState(localStorage.getItem("network") ? localStorage.getItem("network") : "");
+    const [status, setStatus] = useState(localStorage.getItem(StoreKeys.walletAuthStatus) ? localStorage.getItem(StoreKeys.walletAuthStatus) : Status.IDLE);
+    const [accountAddress, setAccountAddress] = useState(localStorage.getItem(StoreKeys.accountAddress) ? localStorage.getItem(StoreKeys.accountAddress) : "");
+    const [network, setNetwork] = useState(localStorage.getItem(StoreKeys.network) ? localStorage.getItem(StoreKeys.network) : "");
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -64,19 +65,24 @@ export default function WalletAuth(){
                 window.ethereum.request({ method: 'eth_accounts' }).then((accounts) => {
                     if (accounts.length === 0) {
                         setStatus(Status.IDLE);
-                        localStorage.setItem("walletAuthStatus", Status.IDLE);
+                        localStorage.setItem(StoreKeys.walletAuthStatus, Status.IDLE);
                     }else{
                         setStatus(Status.SUCCESS);
-                        localStorage.setItem("walletAuthStatus", Status.SUCCESS);
+                        localStorage.setItem(StoreKeys.walletAuthStatus, Status.SUCCESS);
                         
                         window.ethereum.request({method: "eth_chainId"}).then(chainId=>{
                             setNetwork(ChainMap[chainId]);
-                            localStorage.setItem("network", ChainMap[chainId]);
+                            localStorage.setItem(StoreKeys.network, ChainMap[chainId]);
+                        }).catch(error=>console.log(error));
+
+                        window.ethereum.request({method: "eth_accounts"}).then(accounts=>{
+                            setAccountAddress(accounts[0]);
+                            localStorage.setItem(StoreKeys.accountAddress, accounts[0]);
                         }).catch(error=>console.log(error));
                     }
                 }).catch((e)=>{
                     setStatus(Status.IDLE);
-                    localStorage.setItem("walletAuthStatus", Status.IDLE);
+                    localStorage.setItem(StoreKeys.walletAuthStatus, Status.IDLE);
                     console.error(e);
                 });
             }
@@ -91,21 +97,21 @@ export default function WalletAuth(){
         
         if (provider) {
             
-            localStorage.setItem("walletAuthStatus", Status.SUCCESS);
+            localStorage.setItem(StoreKeys.walletAuthStatus, Status.SUCCESS);
 
             try{
                 const accounts = await toast.promise(provider.request({method: "eth_requestAccounts"}), {
                     pending: {
                         render(){
                             setStatus(Status.PENDING);
-                            localStorage.setItem("walletAuthStatus", Status.PENDING);
+                            localStorage.setItem(StoreKeys.walletAuthStatus, Status.PENDING);
                             return "Login pending";
                         }
                     }, 
                     error: {
                         render({data}){
                             setStatus(Status.IDLE);
-                            localStorage.setItem("walletAuthStatus", Status.IDLE);
+                            localStorage.setItem(StoreKeys.walletAuthStatus, Status.IDLE);
                             let message = data.message;
                             if (data.code === 4001) {
                                 message = 'login was rejected, please connect to MetaMask.';
@@ -116,9 +122,9 @@ export default function WalletAuth(){
                     success: {
                         render({data}){
                             setStatus(Status.SUCCESS);
-                            localStorage.setItem("walletAuthStatus", Status.SUCCESS);
+                            localStorage.setItem(StoreKeys.walletAuthStatus, Status.SUCCESS);
                             setAccountAddress(data[0]);
-                            localStorage.setItem("accountAddress", data[0]);
+                            localStorage.setItem(StoreKeys.accountAddress, data[0]);
                             return `Login Success`;
                         }
                     }
@@ -133,16 +139,15 @@ export default function WalletAuth(){
                 });
 
                 setAccountAddress(accounts[0]);
-                localStorage.setItem("accountAddress", accounts[0]);
+                localStorage.setItem(StoreKeys.accountAddress, accounts[0]);
 
                 const chainId = await provider.request({method: "eth_chainId"});
                 setNetwork(ChainMap[chainId]);
-                localStorage.setItem("network", ChainMap[chainId]);
+                localStorage.setItem(StoreKeys.network, ChainMap[chainId]);
 
                 provider.on('chainChanged', (chainId)=>{
                     setNetwork(ChainMap[chainId]);
-                    localStorage.setItem("network", ChainMap[chainId]);
-                    console.log(network);
+                    localStorage.setItem(StoreKeys.network, ChainMap[chainId]);
                 });
 
             }catch(error){
