@@ -1,0 +1,8 @@
+.container{
+    margin-bottom: auto;
+    margin-top: auto;
+}
+
+.login-info:not(:last-child) {
+    margin-right: 1rem;
+}

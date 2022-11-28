@@ -8,10 +8,16 @@
 nav{
     display:flex;
     background-color: #0d1a26;
+    padding-right: 10px;
+    padding-bottom: 10px;
 }
 
 nav > img{
     padding:10px;
     margin:10px;
     height: 40px;
+}
+
+.network-name{
+    color: #fff;
 }
